@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - web
+  web:
+    build: ./project
+    command: gunicorn core.wsgi -c gunicorn.conf.py
+    #command: opentelemetry-instrument python manage.py runserver 0.0.0.0:8000 --noreload
+    volumes:
+      - ./project/:/usr/src/app/
+    ports:
+      - 1337:8000
+      - "4317"
+    environment:
+      - DEBUG=1
+      - SECRET_KEY=dbaa1_i7%*3r9-=z-+_mz4r-!qeed@(-a_r(g@k8jo8y3r27%m
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otelcol:4317
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otelcol:4317
+      - OTEL_METRICS_EXPORTER=otlp
+      - OTEL_SERVICE_NAME=web-victor
+      - OTEL_TRACES_EXPORTER=otlp
+  celery:
+    build: ./project
+    command: opentelemetry-instrument celery --app=core worker --loglevel=debug
+    volumes:
+      - ./project:/usr/src/app
+    environment:
+      - DEBUG=1
+      - SECRET_KEY=dbaa1_i7%*3r9-=z-+_mz4r-!qeed@(-a_r(g@k8jo8y3r27%m
+      - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
+      - OTEL_SERVICE_NAME=celery-victor
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=otlp
+      - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otelcol:4317
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otelcol:4317
+    depends_on:
+      - web
+      - redis
+      - otelcol
+  redis:
+    image: redis:7-alpine
+
+  otelcol:
+    image: otel/opentelemetry-collector-contrib:0.84.0
+    container_name: otelcol
+    deploy:
+      resources:
+        limits:
+          memory: 125M
+    restart: unless-stopped
+    command: ["--config=/etc/config.yaml"]
+    volumes:
+      - ./config.yaml:/etc/config.yaml
+    ports:
+      - 4317:4317 # OTLP over gRPC receiver
+      - "4318" # OTLP over HTTP receiver
+      - "9464" # Prometheus exporter
+      - "8888" # metrics endpoint
