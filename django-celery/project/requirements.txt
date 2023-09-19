@@ -17,6 +17,8 @@ opentelemetry-instrumentation-django
 opentelemetry-instrumentation-grpc
 opentelemetry-instrumentation-logging
 opentelemetry-instrumentation-redis
+opentelemetry-instrumentation-asgi
 opentelemetry-sdk
 gunicorn
 requests
+uvicorn[standard]

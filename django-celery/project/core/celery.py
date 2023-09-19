@@ -11,6 +11,8 @@ app = Celery("core")
 app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks()
 
+# Initialize OpenTelemetry Celery instrumentation
+CeleryInstrumentor().instrument()
 # Define a function for worker process initialization
 def initialize_worker(sender=None, **kwargs):
     # Add your initialization code here
@@ -19,6 +21,3 @@ def initialize_worker(sender=None, **kwargs):
 
 # Connect the worker_process_init signal to the initialization function
 worker_process_init.connect(initialize_worker)
-
-# Initialize OpenTelemetry Celery instrumentation
-CeleryInstrumentor().instrument()

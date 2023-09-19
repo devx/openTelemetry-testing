@@ -3,3 +3,4 @@ venv/
 # ignores the otel config need to make it an enviro variable
 django-celery/config.yaml
 otel-svc/config.yaml
+openTelemetry/django-celery
