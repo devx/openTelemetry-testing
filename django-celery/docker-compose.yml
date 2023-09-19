@@ -7,16 +7,17 @@ services:
       - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./project/staticfiles:/app/static
     depends_on:
       - web
   web:
     build: ./project
-    command: gunicorn core.wsgi -c gunicorn.conf.py
+    command: gunicorn core.wsgi -c gunicorn.conf.py -b 0.0.0.0:8000
     #command: opentelemetry-instrument python manage.py runserver 0.0.0.0:8000 --noreload
     volumes:
       - ./project/:/usr/src/app/
     ports:
-      - 1337:8000
+      - 8000:8000
       - "4317"
     environment:
       - DEBUG=1
@@ -29,7 +30,7 @@ services:
       - OTEL_TRACES_EXPORTER=otlp
   celery:
     build: ./project
-    command: opentelemetry-instrument celery --app=core worker --loglevel=debug
+    command: celery --app=core worker --loglevel=debug
     volumes:
       - ./project:/usr/src/app
     environment:
@@ -66,3 +67,10 @@ services:
       - "4318" # OTLP over HTTP receiver
       - "9464" # Prometheus exporter
       - "8888" # metrics endpoint
+#volumes:
+#  - data-volume:
+#      driver: local
+#      driver_opts:
+#        type: "none"
+#        o: "bind"
+#        devices: "./project/static"
