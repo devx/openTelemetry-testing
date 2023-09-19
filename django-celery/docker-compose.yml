@@ -14,7 +14,7 @@ services:
     build: ./project
     #command: gunicorn config.asgi -c gunicorn.conf.py --bind 0.0.0.0:8000
     #command: gunicorn core.wsgi -c gunicorn.conf.py -b 0.0.0.0:8000
-    command: opentelemetry-instrument gunicorn core.wsgi -c gunicorn2.conf.py -b 0.0.0.0:8000
+    command: opentelemetry-instrument gunicorn core.wsgi -c gunicorn.conf.py -b 0.0.0.0:8000
     #command: opentelemetry-instrument python manage.py runserver 0.0.0.0:8000 --noreload
     volumes:
       - ./project/:/usr/src/app/
