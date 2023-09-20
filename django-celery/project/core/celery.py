@@ -12,10 +12,6 @@ app = Celery("core")
 app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks()
 
-
-
-
-#RedisInstrumentor().instrument()
 # Initialize OpenTelemetry Celery instrumentation
 CeleryInstrumentor().instrument()
 
