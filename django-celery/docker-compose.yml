@@ -12,7 +12,9 @@ services:
       - web
   web:
     build: ./project
-    command: gunicorn core.wsgi -c gunicorn.conf.py -b 0.0.0.0:8000
+    #command: gunicorn config.asgi -c gunicorn.conf.py --bind 0.0.0.0:8000
+    #command: gunicorn core.wsgi -c gunicorn.conf.py -b 0.0.0.0:8000
+    command: opentelemetry-instrument gunicorn core.wsgi -c gunicorn.conf.py -b 0.0.0.0:8000
     #command: opentelemetry-instrument python manage.py runserver 0.0.0.0:8000 --noreload
     volumes:
       - ./project/:/usr/src/app/
@@ -23,6 +25,7 @@ services:
       - DEBUG=1
       - SECRET_KEY=dbaa1_i7%*3r9-=z-+_mz4r-!qeed@(-a_r(g@k8jo8y3r27%m
       - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+      - DJANGO_SETTINGS_MODULE=core.settings
       - OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=http://otelcol:4317
       - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otelcol:4317
       - OTEL_METRICS_EXPORTER=otlp
